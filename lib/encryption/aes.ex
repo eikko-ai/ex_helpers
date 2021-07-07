@@ -96,7 +96,7 @@ defmodule Helper.Encryption.AES do
 
   @spec encryption_keys() :: list(binary)
   defp encryption_keys do
-    case keys = Application.get_env(:helpers, Encryption.AES)[:keys] do
+    case keys = Application.get_env(:ex_helpers, Encryption.AES)[:keys] do
       k when is_binary(k) ->
         keys
         |> String.replace("'", "")
