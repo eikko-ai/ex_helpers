@@ -5,5 +5,5 @@ defmodule Helper do
 
   def endpoint, do: Application.get_env(:ex_helpers, :endpoint)
 
-  def translator, do: Application.get_env(:ex_helpers, :translator)
+  def gettext, do: Application.get_env(:ex_helpers, :gettext)
 end

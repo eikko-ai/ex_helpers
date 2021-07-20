@@ -5,7 +5,7 @@ defmodule Helper.ErrorHandler do
   """
 
   def translator do
-    Helper.translator()
+    Helper.gettext()
   end
 
   def not_found_formater(queryable, id) when is_integer(id) or is_binary(id) do
