@@ -174,4 +174,11 @@ defmodule Helper.ORM do
     QueryBuilder.search_query(query, fields_list)
     |> Helper.repo().all()
   end
+
+  def get_random_db_entry(query) do
+    query
+    |> order_by(fragment("RANDOM()"))
+    |> limit(1)
+    |> Helper.repo().one()
+  end
 end
