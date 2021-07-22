@@ -185,4 +185,72 @@ defmodule Helper.Translator do
       {:ok, container} -> container
     end
   end
+
+  ## Query Builder
+
+  if Code.ensure_loaded?(Ecto.Adapters.SQL) do
+    @doc """
+    Generates a SQL fragment for accessing a translated field in an `Ecto.Query`.
+    The generated SQL fragment can be coupled with the rest of the functions and
+    operators provided by `Ecto.Query` and `Ecto.Query.API`.
+
+    ## Safety
+    This macro will emit errors when used with untranslatable
+    schema modules or fields. Errors are emited during the compilation phase
+    thus avoiding runtime errors after the queries are built.
+
+    ## Example
+
+        iex> Repo.all(from a in Article,
+        ...>   where: not is_nil(translated(Article, a, :es)))
+    """
+    defmacro translated(module, translatable, locale) do
+      with field <- field(translatable) do
+        module = Macro.expand(module, __CALLER__)
+        validate_field(module, field)
+        generate_query(schema(translatable), module, field, locale)
+      end
+    end
+
+    defp generate_query(schema, module, nil, locale) do
+      quote do
+        fragment(
+          "(?->?)",
+          field(unquote(schema), unquote(module.__trans__(:container))),
+          ^to_string(unquote(locale))
+        )
+      end
+    end
+
+    defp generate_query(schema, module, field, locale) do
+      quote do
+        fragment(
+          "(?->?->>?)",
+          field(unquote(schema), unquote(module.__trans__(:container))),
+          ^to_string(unquote(locale)),
+          ^unquote(field)
+        )
+      end
+    end
+
+    defp schema({{:., _, [schema, _field]}, _metadata, _args}), do: schema
+    defp schema(schema), do: schema
+
+    defp field({{:., _, [_schema, field]}, _metadata, _args}), do: to_string(field)
+    defp field(_), do: nil
+
+    defp validate_field(module, field) do
+      cond do
+        is_nil(field) ->
+          nil
+
+        not translatable?(module, field) ->
+          raise ArgumentError,
+            message: "'#{inspect(module)}' module must declare '#{field}' as translatable"
+
+        true ->
+          nil
+      end
+    end
+  end
 end
