@@ -1,4 +1,4 @@
-defmodule Iki.Translator do
+defmodule Helper.Translator do
   @moduledoc """
   The Translator Helper provides a way to provide translation for Ecto Schema fields
   without the need to create extra tables by using a map (PostgreSQL JSONB datatype)
