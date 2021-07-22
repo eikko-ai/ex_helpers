@@ -1,7 +1,7 @@
 defmodule ExHelpers.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.2.0"
 
   def project do
     [
@@ -25,8 +25,8 @@ defmodule ExHelpers.MixProject do
     [
       {:ecto_sql, "~> 3.6"},
       {:gettext, "~> 0.18"},
-      {:html_sanitize_ex, "~> 1.4"},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.2"},
+      {:html_sanitize_ex, "~> 1.4"}
     ]
   end
 end
