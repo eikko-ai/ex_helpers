@@ -55,8 +55,30 @@ defmodule Helper.Translator do
   end
 
   @doc """
-  Get a translated value into the given locale or falls back to the default
-  value if there is no translation available.
+  Translate an Ecto Struct or list of structs into the given locale
+  or falls back to the default value if there is no translation available.
+
+  ## Example
+      iex> Repo.all(Article) |> Helper.Translator.translate(:pt)
+      iex> [...]
+  """
+  @spec translate(list | struct, String.t() | atom) :: list | struct | String.t()
+  def translate(data_structure, locale)
+
+  def translate([], _locale), do: []
+
+  def translate([head | tail], locale) do
+    [translate(head, locale) | translate(tail, locale)]
+  end
+
+  def translate(%{__struct__: _module} = struct, locale) do
+    translate_struct(struct, locale)
+  end
+
+  @doc """
+  Translate the Ecto struct field value into the given locale
+  or falls back to the default value if there is no
+  translation available.
 
   ## Example
       iex> Helper.Translator.translate(article, :title, :pt)
@@ -82,6 +104,20 @@ defmodule Helper.Translator do
          {:ok, translated_field} <- Map.fetch(translations_for_locale, to_string(field)) do
       translated_field
     end
+  end
+
+  @spec translate_struct(struct, String.t() | atom) :: any
+  defp translate_struct(%{__struct__: module} = struct, locale)
+       when is_binary(locale) or is_atom(locale) do
+    translatable_fields =
+      :fields
+      |> module.__trans__
+      |> MapSet.new()
+
+    translatable_fields
+    |> Enum.reduce(struct, fn field, updated_struct ->
+      struct(updated_struct, [{field, translate(struct, field, locale)}])
+    end)
   end
 
   @doc """
