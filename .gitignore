@@ -24,3 +24,9 @@ helpers-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Environment files.
+*.env
+
+# Development Environment.
+.devcontainer
