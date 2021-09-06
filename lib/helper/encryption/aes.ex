@@ -5,6 +5,8 @@ defmodule Helper.Encryption.AES do
   using a random Initialisation Vector for each encryption,
   this makes "bruteforce" decryption much more difficult.
   See `encrypt/1` and `decrypt/1` for more details.
+
+  Source: https://github.com/dwyl/phoenix-ecto-encryption-example
   """
 
   @type plaintext :: binary
