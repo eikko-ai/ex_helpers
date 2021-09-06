@@ -26,7 +26,7 @@ defmodule ExHelpers.MixProject do
       {:ecto_sql, "~> 3.6"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
-      {:html_sanitize_ex, "~> 1.4"}
+      {:floki, ">= 0.27.0"}
     ]
   end
 end
