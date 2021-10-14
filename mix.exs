@@ -1,7 +1,7 @@
 defmodule ExHelpers.MixProject do
   use Mix.Project
 
-  @version "0.5.0"
+  @version "0.5.1"
 
   def project do
     [
@@ -23,7 +23,7 @@ defmodule ExHelpers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto_sql, "~> 3.6"},
+      {:ecto_sql, "~> 3.7"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:floki, ">= 0.27.0"}

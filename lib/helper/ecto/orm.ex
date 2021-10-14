@@ -161,7 +161,7 @@ defmodule Helper.ORM do
   def search(queryables, fields, term) when is_list(queryables) do
     queryables
     |> Enum.flat_map(fn query ->
-      fields_list = fields |> Enum.map(&{&1, "%#{term}"})
+      fields_list = fields |> Enum.map(&{&1, "%#{term}%"})
 
       QueryBuilder.search_query(query, fields_list)
       |> Helper.repo().all()
