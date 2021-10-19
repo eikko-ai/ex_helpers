@@ -157,15 +157,27 @@ defmodule Helper.Ecto do
 
   Example:
   ```
-    create_enum("user_role", "'admin', 'staff', 'user'")
+    create_enum("user_role", ["admin", "staff", "user"])
   ```
   """
-  defmacro create_enum(type, values) do
+  defmacro create_enum(type, values) when is_list(values) do
+    values = values |> Enum.map(&"'#{&1}'") |> Enum.join(",")
+
     quote do
       execute(
         unquote("CREATE TYPE #{type} AS ENUM (#{values})"),
         unquote("DROP TYPE #{type}")
       )
     end
+  end
+
+  @doc """
+  Shortcut for creating a trgm index (`pg_tgrm`).
+  See `Ecto.Migration.index/3` for more information.
+  """
+  @spec trgm_index(atom, atom, Keyword.t()) :: map
+  def trgm_index(table, column, opts \\ []) do
+    opts = Keyword.merge([using: "GIN", name: "#{table}_#{column}_trgm_index"], opts)
+    Ecto.Migration.index(table, ["#{column} gin_trgm_ops"], opts)
   end
 end
