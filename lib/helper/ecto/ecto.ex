@@ -170,14 +170,4 @@ defmodule Helper.Ecto do
       )
     end
   end
-
-  @doc """
-  Shortcut for creating a trgm index (`pg_tgrm`).
-  See `Ecto.Migration.index/3` for more information.
-  """
-  @spec trgm_index(atom, atom, Keyword.t()) :: map
-  def trgm_index(table, column, opts \\ []) do
-    opts = Keyword.merge([using: "GIN", name: "#{table}_#{column}_trgm_index"], opts)
-    Ecto.Migration.index(table, ["#{column} gin_trgm_ops"], opts)
-  end
 end
