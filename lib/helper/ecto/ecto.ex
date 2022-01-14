@@ -157,10 +157,12 @@ defmodule Helper.Ecto do
 
   Example:
   ```
-    create_enum("user_role", "'admin', 'staff', 'user'")
+    create_enum("user_role", ["admin", "staff", "user"])
   ```
   """
-  defmacro create_enum(type, values) do
+  defmacro create_enum(type, values) when is_list(values) do
+    values = values |> Enum.map(&"'#{&1}'") |> Enum.join(",")
+
     quote do
       execute(
         unquote("CREATE TYPE #{type} AS ENUM (#{values})"),
