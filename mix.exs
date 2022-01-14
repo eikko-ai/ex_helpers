@@ -1,7 +1,7 @@
 defmodule ExHelpers.MixProject do
   use Mix.Project
 
-  @version "0.6.1"
+  @version "0.7.0"
 
   def project do
     [
@@ -24,9 +24,9 @@ defmodule ExHelpers.MixProject do
   defp deps do
     [
       {:ecto_sql, "~> 3.7"},
-      {:gettext, "~> 0.18"},
-      {:jason, "~> 1.2"},
-      {:floki, ">= 0.27.0"}
+      {:gettext, "~> 0.19"},
+      {:jason, "~> 1.3"},
+      {:floki, ">= 0.32.0"}
     ]
   end
 end
