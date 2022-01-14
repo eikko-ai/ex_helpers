@@ -153,7 +153,7 @@ defmodule Helper.ORM do
   end
 
   @doc """
-  Search (where ilike) the term on the queryables list on
+  Search (contains) the term on the queryables list on
   the passed fields.
 
   Example: search([Country, Place], [:name, :description], "lisbon")
@@ -170,6 +170,52 @@ defmodule Helper.ORM do
 
   def search(query, fields, term) do
     fields_list = fields |> Enum.map(&{&1, "%#{term}%"})
+
+    QueryBuilder.search_query(query, fields_list)
+    |> Helper.repo().all()
+  end
+
+  @doc """
+  Search (starts with) the term on the queryables list on
+  the passed fields.
+
+  Example: search([Country, Place], [:name, :description], "lisbon")
+  """
+  def search_starts_with(queryables, fields, term) when is_list(queryables) do
+    queryables
+    |> Enum.flat_map(fn query ->
+      fields_list = fields |> Enum.map(&{&1, "#{term}%"})
+
+      QueryBuilder.search_query(query, fields_list)
+      |> Helper.repo().all()
+    end)
+  end
+
+  def search_starts_with(query, fields, term) do
+    fields_list = fields |> Enum.map(&{&1, "#{term}%"})
+
+    QueryBuilder.search_query(query, fields_list)
+    |> Helper.repo().all()
+  end
+
+  @doc """
+  Search (ends with) the term on the queryables list on
+  the passed fields.
+
+  Example: search([Country, Place], [:name, :description], "lisbon")
+  """
+  def search_ends_with(queryables, fields, term) when is_list(queryables) do
+    queryables
+    |> Enum.flat_map(fn query ->
+      fields_list = fields |> Enum.map(&{&1, "%#{term}"})
+
+      QueryBuilder.search_query(query, fields_list)
+      |> Helper.repo().all()
+    end)
+  end
+
+  def search_ends_with(query, fields, term) do
+    fields_list = fields |> Enum.map(&{&1, "%#{term}"})
 
     QueryBuilder.search_query(query, fields_list)
     |> Helper.repo().all()
