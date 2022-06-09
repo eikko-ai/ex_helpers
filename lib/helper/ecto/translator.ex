@@ -74,11 +74,7 @@ defmodule Helper.Translator do
   end
 
   def translate(%{__struct__: _module} = struct, locale) when is_locale(locale) do
-    if Keyword.has_key?(module.__info__(:functions), :__trans__) do
-      translate_struct(struct, locale)
-    else
-      struct
-    end
+    translate_struct(struct, locale)
   end
 
   @doc """
@@ -106,9 +102,13 @@ defmodule Helper.Translator do
 
   @spec translate_struct(struct, String.t() | atom) :: any
   defp translate_struct(%{__struct__: module} = struct, locale) do
-    struct
-    |> translate_fields(locale)
-    |> translate_assocs(locale)
+    if Keyword.has_key?(module.__info__(:functions), :__trans__) do
+      struct
+      |> translate_fields(locale)
+      |> translate_assocs(locale)
+    else
+      struct
+    end
   end
 
   defp translate_fields(%{__struct__: module} = struct, locale) do
