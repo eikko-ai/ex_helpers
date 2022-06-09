@@ -23,10 +23,10 @@ defmodule ExHelpers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto_sql, "~> 3.7"},
+      {:ecto_sql, "~> 3.8"},
       {:gettext, "~> 0.19"},
       {:jason, "~> 1.3"},
-      {:floki, ">= 0.32.0"}
+      {:floki, ">= 0.32.1"}
     ]
   end
 end
