@@ -73,8 +73,12 @@ defmodule Helper.Translator do
     [translate(head, locale) | translate(tail, locale)]
   end
 
-  def translate(%{__struct__: _module} = struct, locale) do
-    translate_struct(struct, locale)
+  def translate(%{__struct__: _module} = struct, locale) when is_locale(locale) do
+    if Keyword.has_key?(module.__info__(:functions), :__trans__) do
+      translate_struct(struct, locale)
+    else
+      struct
+    end
   end
 
   @doc """
@@ -100,6 +104,45 @@ defmodule Helper.Translator do
     end
   end
 
+  @spec translate_struct(struct, String.t() | atom) :: any
+  defp translate_struct(%{__struct__: module} = struct, locale) do
+    struct
+    |> translate_fields(locale)
+    |> translate_assocs(locale)
+  end
+
+  defp translate_fields(%{__struct__: module} = struct, locale) do
+    fields = module.__trans__(:fields)
+
+    Enum.reduce(fields, struct, fn field, struct ->
+      case translate_field(struct, locale, field) do
+        :error -> struct
+        translation -> Map.put(struct, field, translation)
+      end
+    end)
+  end
+
+  defp translate_assocs(%{__struct__: module} = struct, locale) do
+    associations = module.__schema__(:associations)
+    embeds = module.__schema__(:embeds)
+
+    Enum.reduce(associations ++ embeds, struct, fn assoc_name, struct ->
+      Map.update(struct, assoc_name, nil, fn
+        %Ecto.Association.NotLoaded{} = item ->
+          item
+
+        items when is_list(items) ->
+          Enum.map(items, &translate(&1, locale))
+
+        %{} = item ->
+          translate(item, locale)
+
+        item ->
+          item
+      end)
+    end)
+  end
+
   defp translate_field(%{__struct__: module} = struct, locale, field) do
     with {:ok, all_translations} <- Map.fetch(struct, module.__trans__(:container)),
          {:ok, translations_for_locale} <- get_translations_for_locale(all_translations, locale),
@@ -108,17 +151,34 @@ defmodule Helper.Translator do
     end
   end
 
-  @spec translate_struct(struct, String.t() | atom) :: any
-  defp translate_struct(%{__struct__: module} = struct, locale) when is_locale(locale) do
-    translatable_fields =
-      :fields
-      |> module.__trans__
-      |> MapSet.new()
+  # Check if struct (means it's using ecto embeds); if so, make sure 'locale' is also atom
+  defp get_translations_for_locale(%{__struct__: _} = all_translations, locale)
+       when is_binary(locale) do
+    get_translations_for_locale(all_translations, String.to_existing_atom(locale))
+  end
 
-    translatable_fields
-    |> Enum.reduce(struct, fn field, updated_struct ->
-      struct(updated_struct, [{field, translate(struct, field, locale)}])
-    end)
+  # Fallback to default behaviour
+  defp get_translations_for_locale(all_translations, locale) do
+    Map.fetch(all_translations, to_string(locale))
+  end
+
+  # There are no translations for this locale embed
+  defp get_translated_field(nil, _field), do: nil
+
+  # Check if struct (means it's using ecto embeds); if so, make sure 'field' is also atom
+  defp get_translated_field(%{__struct__: _} = translations_for_locale, field)
+       when is_binary(field) do
+    get_translated_field(translations_for_locale, String.to_existing_atom(field))
+  end
+
+  defp get_translated_field(%{__struct__: _} = translations_for_locale, field)
+       when is_atom(field) do
+    Map.fetch(translations_for_locale, field)
+  end
+
+  # Fallback to default behaviour
+  defp get_translated_field(translations_for_locale, field) do
+    Map.fetch(translations_for_locale, to_string(field))
   end
 
   @doc """
@@ -221,36 +281,6 @@ defmodule Helper.Translator do
       :error -> :translations
       {:ok, container} -> container
     end
-  end
-
-  # Check if struct (means it's using ecto embeds); if so, make sure 'locale' is also atom
-  defp get_translations_for_locale(%{__struct__: _} = all_translations, locale)
-       when is_binary(locale) do
-    get_translations_for_locale(all_translations, String.to_existing_atom(locale))
-  end
-
-  # Fallback to default behaviour
-  defp get_translations_for_locale(all_translations, locale) do
-    Map.fetch(all_translations, to_string(locale))
-  end
-
-  # There are no translations for this locale embed
-  defp get_translated_field(nil, _field), do: nil
-
-  # Check if struct (means it's using ecto embeds); if so, make sure 'field' is also atom
-  defp get_translated_field(%{__struct__: _} = translations_for_locale, field)
-       when is_binary(field) do
-    get_translated_field(translations_for_locale, String.to_existing_atom(field))
-  end
-
-  defp get_translated_field(%{__struct__: _} = translations_for_locale, field)
-       when is_atom(field) do
-    Map.fetch(translations_for_locale, field)
-  end
-
-  # Fallback to default behaviour
-  defp get_translated_field(translations_for_locale, field) do
-    Map.fetch(translations_for_locale, to_string(field))
   end
 
   ## Query Builder
